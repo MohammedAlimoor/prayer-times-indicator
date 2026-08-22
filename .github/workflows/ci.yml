@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests on Ubuntu ${{ matrix.ubuntu }}
+    runs-on: ubuntu-${{ matrix.ubuntu }}
+    strategy:
+      fail-fast: false
+      matrix:
+        ubuntu: ["22.04", "24.04"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install desktop dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-gi gir1.2-gtk-3.0 \
+            gir1.2-ayatanaappindicator3-0.1 gir1.2-notify-0.7 \
+            xvfb desktop-file-utils
+
+      - name: Install test tooling
+        run: python3 -m pip install --upgrade pytest ruff
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Byte-compile every module
+        run: python3 -m compileall -q prayertimes run.py tools
+
+      - name: Unit tests
+        run: python3 -m pytest -q
+
+      - name: Import the GTK modules under a virtual display
+        run: xvfb-run -a python3 -c "import prayertimes.indicator, prayertimes.settings; print('GTK modules import cleanly')"
+
+  shell:
+    name: Shell scripts
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shellcheck
+        run: shellcheck install.sh uninstall.sh packaging/*.sh
+      - name: Validate the desktop entry
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends desktop-file-utils
+          sed -n '/^\[Desktop Entry\]/,/^DESK$/p' packaging/build-deb.sh \
+            | sed '$d' > /tmp/prayer-times.desktop
+          desktop-file-validate /tmp/prayer-times.desktop
+
+  package:
+    name: Build and install the .deb
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the package
+        run: packaging/build-deb.sh
+
+      - name: Install it the way a user would
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ./dist/prayer-times-indicator.deb
+
+      - name: Smoke-test the installed program
+        run: |
+          sudo apt-get install -y --no-install-recommends xvfb
+          test -x /usr/bin/prayer-times
+          # First run opens the setup window; it must stay alive for 15s.
+          xvfb-run -a timeout 15 prayer-times && rc=$? || rc=$?
+          # 124 == still running when timeout fired, which is what we want.
+          if [ "$rc" != "124" ]; then
+            echo "prayer-times exited early with status $rc"
+            exit 1
+          fi
+          echo "the indicator started and kept running"
+
+      - name: Remove it again
+        run: sudo apt-get remove -y prayer-times-indicator
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prayer-times-indicator-deb
+          path: dist/*.deb

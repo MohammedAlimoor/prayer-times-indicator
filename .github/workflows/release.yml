@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v1.0.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build packages and publish the release
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      - name: Work out the version
+        id: version
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Check the tag matches __version__
+        run: |
+          source_version="$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' prayertimes/__init__.py)"
+          if [ "$source_version" != "${{ steps.version.outputs.version }}" ]; then
+            echo "tag ${{ steps.version.outputs.tag }} does not match __version__ = $source_version"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            python3-gi gir1.2-gtk-3.0 \
+            gir1.2-ayatanaappindicator3-0.1 gir1.2-notify-0.7 xvfb
+          python3 -m pip install --upgrade pytest
+
+      - name: Tests must pass before anything ships
+        run: python3 -m pytest -q
+
+      - name: Build the .deb and the tarball
+        run: |
+          packaging/build-deb.sh
+          packaging/build-tarball.sh
+          ls -la dist/
+
+      - name: Verify the package installs
+        run: |
+          sudo apt-get install -y ./dist/prayer-times-indicator.deb
+          test -x /usr/bin/prayer-times
+          sudo apt-get remove -y prayer-times-indicator
+
+      - name: Checksums
+        run: |
+          cd dist
+          sha256sum ./*.deb ./*.tar.gz > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: prayer-times-indicator ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: |
+            dist/*.deb
+            dist/*.tar.gz
+            dist/SHA256SUMS
