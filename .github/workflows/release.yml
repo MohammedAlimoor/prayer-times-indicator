@@ -72,6 +72,29 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: prayer-times-indicator ${{ steps.version.outputs.version }}
           generate_release_notes: true
+          body: |
+            Islamic prayer times in the Ubuntu/GNOME top bar — the next prayer and a
+            live countdown in the panel, the full day's schedule behind the icon, and
+            every time computed locally from the sun's position. No internet, no
+            telemetry.
+
+            ## Install
+
+            ```bash
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/prayer-times-indicator.deb
+            sudo apt install ./prayer-times-indicator.deb
+            prayer-times
+            ```
+
+            | Download | |
+            |---|---|
+            | Debian package | [prayer-times-indicator.deb](https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/prayer-times-indicator.deb) |
+            | Source tarball | [prayer-times-indicator.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/prayer-times-indicator.tar.gz) |
+            | Checksums | [SHA256SUMS](https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/SHA256SUMS) |
+
+            Built, installed and smoke-tested on a clean Ubuntu 24.04 runner before
+            publishing. Requires Ubuntu 22.04+ or another GNOME desktop with the
+            AppIndicator extension enabled.
           files: |
             dist/*.deb
             dist/*.tar.gz
