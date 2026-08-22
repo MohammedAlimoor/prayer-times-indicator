@@ -160,6 +160,10 @@ horizon. Everything runs locally in about a millisecond.
 - **Settings** live in `~/.config/prayer-times/config.json` — ordinary JSON you
   can edit by hand, written atomically so a crash can't corrupt it.
 
+[**docs/ARCHITECTURE.md**](docs/ARCHITECTURE.md) walks through the process
+layout, the six steps of the calculation, and the GNOME Shell quirks the panel
+label has to work around.
+
 ---
 
 ## Requirements
@@ -200,6 +204,7 @@ prayertimes/
 packaging/        .deb and tarball builders
 tests/            unit tests for the engine, calendar, cities and config
 tools/            screenshot capture used for this README
+docs/             architecture notes and the screenshots above
 ```
 
 ---
