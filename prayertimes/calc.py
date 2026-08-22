@@ -5,7 +5,7 @@
 """
 
 import math
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 # ---------------------------------------------------------------- الثوابت

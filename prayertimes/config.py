@@ -74,7 +74,7 @@ def _deep_merge(base, override):
 def load():
     """يقرأ الإعدادات، ويرجع الافتراضية إن لم يوجد ملف أو كان تالفاً."""
     try:
-        with open(CONFIG_PATH, "r", encoding="utf-8") as fh:
+        with open(CONFIG_PATH, encoding="utf-8") as fh:
             data = json.load(fh)
         if not isinstance(data, dict):
             raise ValueError("config root is not an object")

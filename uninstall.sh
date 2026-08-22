@@ -6,8 +6,7 @@ PREFIX="${PREFIX:-$HOME/.local}"
 
 echo "==> إيقاف البرنامج إن كان يعمل"
 pkill -x prayer-times 2>/dev/null || true
-ps -eo pid,cmd --no-headers | grep -E "python3 [^ ]*prayer-times/run\.py" | grep -v grep \
-  | awk '{print $1}' | xargs -r kill 2>/dev/null || true
+pkill -f "python3 [^ ]*prayer-times/run\.py" 2>/dev/null || true
 
 echo "==> حذف الملفات"
 rm -rf  "$PREFIX/share/prayer-times"

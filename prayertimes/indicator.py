@@ -6,14 +6,14 @@ gi.require_version("Gtk", "3.0")
 gi.require_version("AyatanaAppIndicator3", "0.1")
 gi.require_version("Notify", "0.7")
 
-from gi.repository import AyatanaAppIndicator3 as AppIndicator  # noqa: E402
-from gi.repository import GLib, Gtk, Notify  # noqa: E402
-
 from datetime import datetime, timedelta  # noqa: E402
 from zoneinfo import ZoneInfo  # noqa: E402
 
-from . import config, hijri, sound  # noqa: E402
-from .calc import PRAYERS, PRAYER_NAMES_AR, PrayerCalculator, next_prayer  # noqa: E402
+from gi.repository import AyatanaAppIndicator3 as AppIndicator  # noqa: E402
+from gi.repository import GLib, Gtk, Notify  # noqa: E402
+
+from . import hijri, sound  # noqa: E402
+from .calc import PRAYER_NAMES_AR, PRAYERS, PrayerCalculator, next_prayer  # noqa: E402
 from .settings import SettingsWindow  # noqa: E402
 
 APP_NAME = "أوقات الصلاة"

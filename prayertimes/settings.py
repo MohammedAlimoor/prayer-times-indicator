@@ -3,13 +3,12 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GLib  # noqa: E402
-
 from zoneinfo import available_timezones  # noqa: E402
 
+from gi.repository import Gdk, GLib, Gtk  # noqa: E402
+
 from . import cities, config  # noqa: E402
-from .calc import (ASR_METHODS, HIGH_LAT_METHODS, METHODS,  # noqa: E402
-                   PRAYER_NAMES_AR, PRAYERS)
+from .calc import ASR_METHODS, HIGH_LAT_METHODS, METHODS, PRAYER_NAMES_AR, PRAYERS  # noqa: E402
 
 CSS = b"""
 .pt-title  { font-size: 15pt; font-weight: bold; }
